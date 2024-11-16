@@ -5,29 +5,70 @@ require_once 'controllers/UsuarioController.php';
 $usuarioController = new UsuarioController();
 
 $method = $_SERVER['REQUEST_METHOD'];
-$requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$requestUri = trim($requestUri, '/');
-$baseUri = 'www/users-api';
-$relativeUri = str_replace($baseUri, '', $requestUri);
-$relativeUri = ltrim($relativeUri, '/');
+$relativeUri = getApiRequested();
 
-// Registrar nuevo usuario
-if ($method == 'POST' && $relativeUri == 'register') {
-    $data = json_decode(file_get_contents('php://input'), true);
-    echo $usuarioController->register($data);
-    echo "holaasd";
+// Obtener la API solicitada
+function getApiRequested() {
+    $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    $requestUri = trim($requestUri, '/');
+    $baseUri = BASE_FOLDER . "/api/";
+    $position = strpos($requestUri, $baseUri);
+    return substr($requestUri, $position + strlen($baseUri));
 }
 
-// Login de usuario
-if ($method == 'POST' && $relativeUri == 'login') {
-    $data = json_decode(file_get_contents('php://input'), true);
-    echo $usuarioController->login($data);
+// Obtener token del header
+function getToken() {
+    $headers = getallheaders();
+    return isset($headers['Authorization']) ? $headers['Authorization'] : null;
 }
 
-// Obtener usuario
-if ($method == 'GET' && preg_match('/^user\/(.+)$/', $relativeUri, $matches)) {
-    $data = json_decode(file_get_contents('php://input'), true);
-    $data['username'] = $matches[1];  // Agregar el username desde la URL
-    $data['Authorization'] = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
-    echo $usuarioController->getUser($data);
+// Manejar rutas
+switch (true) {
+    // Registrar nuevo usuario
+    case $method == 'POST' && $relativeUri == 'users':
+        $data = json_decode(file_get_contents('php://input'), true);
+        echo $usuarioController->register($data);
+        break;
+
+    // Login de usuario
+    case $method == 'POST' && $relativeUri == 'login':
+        $data = json_decode(file_get_contents('php://input'), true);
+        echo $usuarioController->login($data);
+        break;
+
+    // Obtener usuario por username
+    case $method == 'GET' && preg_match('/^users\/(.+)$/', $relativeUri, $matches):
+        $data = json_decode(file_get_contents('php://input'), true);
+        $data['id'] = $matches[1];
+        echo $usuarioController->getUser($data, getToken());
+        break;
+
+    // Obtener todos los usuarios
+    case $method == 'GET' && $relativeUri == 'users':
+        echo $usuarioController->getUsers(getToken());
+        break;
+
+    // Actualizar usuario
+    case $method == 'PUT' && preg_match('/^users\/(.+)$/', $relativeUri, $matches):
+        $data = json_decode(file_get_contents('php://input'), true);
+        $data['id'] = $matches[1];
+        echo $usuarioController->updateUser($data, getToken());
+        break;
+
+    // Eliminar usuario
+    case $method == 'DELETE' && preg_match('/^users\/(.+)$/', $relativeUri, $matches):
+        $data = json_decode(file_get_contents('php://input'), true);
+        $data['id'] = $matches[1];
+        echo $usuarioController->deleteUser($data, getToken());
+        break;
+
+    // Ruta no válida
+    default:
+        http_response_code(400);
+        echo json_encode([
+            'error' => 'API no válida',
+            'method' => $method,
+            'uri' => $relativeUri,
+        ]);
+        break;
 }
