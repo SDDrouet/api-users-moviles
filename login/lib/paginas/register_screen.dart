@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
+import 'auth_service.dart'; // Importa el AuthService
 
 class RegisterScreen extends StatelessWidget {
-  const RegisterScreen({Key? key}) : super(key: key);
+  RegisterScreen({Key? key}) : super(key: key);
+  final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   void _showRegistrationSuccess(BuildContext context) {
     showDialog(
@@ -65,6 +69,7 @@ class RegisterScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                     TextField(
+                      controller: _usernameController, // Asigna controlador
                       decoration: InputDecoration(
                         hintText: 'Usuario',
                         filled: true,
@@ -73,14 +78,11 @@ class RegisterScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide.none,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
                     TextField(
+                      controller: _emailController, // Asigna controlador
                       decoration: InputDecoration(
                         hintText: 'Email',
                         filled: true,
@@ -89,14 +91,11 @@ class RegisterScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide.none,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
                     TextField(
+                      controller: _passwordController, // Asigna controlador
                       obscureText: true,
                       decoration: InputDecoration(
                         hintText: 'Contraseña',
@@ -106,18 +105,23 @@ class RegisterScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide.none,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
                       ),
                     ),
-
                     const SizedBox(height: 24),
                     ElevatedButton(
-                      onPressed: () {
-                        // Simula el registro exitoso mostrando un mensaje
-                        _showRegistrationSuccess(context);
+                      onPressed: () async {
+                        try {
+                          final message = await AuthService().register(
+                            _usernameController.text,
+                            _emailController.text,
+                            _passwordController.text,
+                          );
+                          _showRegistrationSuccess(context);
+                        } catch (error) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error: $error')),
+                          );
+                        }
                       },
                       child: const Text('REGISTRARSE'),
                       style: ElevatedButton.styleFrom(
@@ -136,7 +140,6 @@ class RegisterScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                     GestureDetector(
                       onTap: () {
-                        // Navegar a la pantalla de inicio de sesión
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => const LoginScreen(),
                         ));
