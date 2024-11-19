@@ -1,35 +1,46 @@
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class AuthService {
-  final String baseUrl = 'http://192.168.1.6:3000';
+  final String baseUrl = 'http://localhost/users-api/api'; // Cambia la URL base si es necesario
 
-
-  Future<String?> register(String username, String email, String password) async {
+  Future<String> login(String email, String password) async {
+    final url = Uri.parse('$baseUrl/login');
     final response = await http.post(
-      Uri.parse('$baseUrl/register'),
+      url,
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'username': username, 'email': email, 'password': password}),
+      body: jsonEncode({
+        'username': email,  // Si la API espera username, cambia aquí.
+        'password': password,
+      }),
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body)['message'];
+      final body = jsonDecode(response.body);
+      return body['token']; // Retorna el token si el login es exitoso.
     } else {
-      throw Exception('Error al registrar usuario');
+      final body = jsonDecode(response.body);
+      throw Exception(body['message'] ?? 'Error desconocido');
     }
   }
 
-  Future<String?> login(String email, String password) async {
+  Future<String> register(String username, String email, String password) async {
+    final url = Uri.parse('$baseUrl/users');
     final response = await http.post(
-      Uri.parse('$baseUrl/login'),
+      url,
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'password': password}),
+      body: jsonEncode({
+        'username': username,
+        'email': email,
+        'password': password,
+      }),
     );
 
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body)['token']; // Token JWT
+    if (response.statusCode == 201) {
+      return 'Usuario registrado exitosamente';
     } else {
-      throw Exception('Error al iniciar sesión');
+      final body = jsonDecode(response.body);
+      throw Exception(body['message'] ?? 'Error desconocido');
     }
   }
 }

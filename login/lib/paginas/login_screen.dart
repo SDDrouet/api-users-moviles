@@ -3,15 +3,16 @@ import 'register_screen.dart';
 import 'auth_service.dart'; // Importa el AuthService
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key}); // Corrige el uso de 'key'
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  // Definir controladores de texto
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
   void dispose() {
@@ -50,25 +51,25 @@ class _LoginScreenState extends State<LoginScreen> {
                 const Icon(Icons.person, size: 64, color: Colors.blue),
                 const SizedBox(height: 24),
                 TextField(
-                  controller: _emailController,
+                  controller: _emailController, // Asociar el controlador
                   decoration: InputDecoration(
-                    labelText: "Email",
+                    labelText: "Usuario",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    prefixIcon: Icon(Icons.email),
+                    prefixIcon: const Icon(Icons.email),
                   ),
                   keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 16),
                 TextField(
-                  controller: _passwordController,
+                  controller: _passwordController, // Asociar el controlador
                   decoration: InputDecoration(
                     labelText: "Contraseña",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    prefixIcon: Icon(Icons.lock),
+                    prefixIcon: const Icon(Icons.lock),
                   ),
                   obscureText: true,
                 ),

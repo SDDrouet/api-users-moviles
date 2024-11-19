@@ -1,0 +1,9 @@
+
+users-api/composer.json
+users-api/composer.lock
+users-api/config/database.php
+users-api/controllers/UsuarioController.php
+users-api/index.php
+users-api/models/Usuario.php
+users-api/README.MD
+users-api/routes/usuarioRoutes.php
