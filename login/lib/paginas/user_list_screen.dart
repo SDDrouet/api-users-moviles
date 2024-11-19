@@ -23,11 +23,12 @@ class _UserListScreenState extends State<UserListScreen> {
 
   Future<void> fetchUsers() async {
     final response = await http.get(
-      Uri.parse('http://yourapiurl.com/users'),
+      Uri.parse('http://localhost/users-api/api/users'),
       headers: {
         'Authorization': 'Bearer ${widget.token}',
       },
     );
+
 
     if (response.statusCode == 200) {
       setState(() {
@@ -39,12 +40,13 @@ class _UserListScreenState extends State<UserListScreen> {
   }
 
   Future<void> deleteUser(int id) async {
-    final response = await http.delete(
-      Uri.parse('http://yourapiurl.com/users/$id'),
+    final response = await http.get(
+      Uri.parse('http://localhost/users-api/api/users'),
       headers: {
         'Authorization': 'Bearer ${widget.token}',
       },
     );
+
 
     if (response.statusCode == 200) {
       fetchUsers();

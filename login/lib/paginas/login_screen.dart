@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'register_screen.dart';
 import 'auth_service.dart'; // Importa el AuthService
+import 'user_list_screen.dart'; // Importa la pantalla de lista de usuarios
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key}); // Corrige el uso de 'key'
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -13,12 +14,42 @@ class _LoginScreenState extends State<LoginScreen> {
   // Definir controladores de texto
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool isLoading = false; // Indicador de carga
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _login() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final token = await AuthService().login(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+      );
+
+      // Redirigir a la pantalla de usuarios si el login es exitoso
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => UserListScreen(token: token),
+        ),
+      );
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $error')),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -51,7 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const Icon(Icons.person, size: 64, color: Colors.blue),
                 const SizedBox(height: 24),
                 TextField(
-                  controller: _emailController, // Asociar el controlador
+                  controller: _emailController,
                   decoration: InputDecoration(
                     labelText: "Usuario",
                     border: OutlineInputBorder(
@@ -63,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 16),
                 TextField(
-                  controller: _passwordController, // Asociar el controlador
+                  controller: _passwordController,
                   decoration: InputDecoration(
                     labelText: "Contraseña",
                     border: OutlineInputBorder(
@@ -74,22 +105,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   obscureText: true,
                 ),
                 const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () async {
-                    try {
-                      final token = await AuthService().login(
-                        _emailController.text,
-                        _passwordController.text,
-                      );
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Token: $token')),
-                      );
-                    } catch (error) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error: $error')),
-                      );
-                    }
-                  },
+                isLoading
+                    ? const CircularProgressIndicator() // Indicador de carga
+                    : ElevatedButton(
+                  onPressed: _login,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     shape: RoundedRectangleBorder(
@@ -106,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => RegisterScreen(),
+                      builder: (context) =>  RegisterScreen(),
                     ));
                   },
                   child: const Text(
