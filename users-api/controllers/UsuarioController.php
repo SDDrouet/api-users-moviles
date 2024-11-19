@@ -27,8 +27,9 @@ class UsuarioController {
         $username = $data['username'];
         $password = $data['password'];
         $email = $data['email'];
+        $passwordHash = password_hash($password, PASSWORD_BCRYPT);
 
-        if (empty($username) || empty($password) || empty($email)) {
+        if (empty($username) || empty($passwordHash) || empty($email)) {
             return jsonResponse(["message" => "Todos los campos son obligatorios"], 400);
         }
 
@@ -39,7 +40,7 @@ class UsuarioController {
         }
 
         // Crear nuevo usuario
-        $userId = Usuario::createUser($username, $password, $email);
+        $userId = Usuario::createUser($username, $passwordHash, $email);
         return jsonResponse(["message" => "Usuario creado exitosamente", "userId" => $userId], 201);
     }
 
@@ -48,12 +49,13 @@ class UsuarioController {
         $password = $data['password'];
 
         $user = Usuario::getUserByUsername($username);
-        if (!$user || $password != $user['password']) {
+        if (!$user || !password_verify($password, $user['password'])) {
             return jsonResponse(["message" => "Credenciales incorrectas"], 401);
         }
 
         // Generar JWT
         $jwt = Usuario::generateJWT($user['id'], $user['username']);
+
         return jsonResponse(["message" => "Login exitoso", "token" => $jwt], 200);
     }
 
