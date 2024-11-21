@@ -68,7 +68,7 @@ switch (true) {
         echo json_encode([
             'error' => 'API no válida',
             'method' => $method,
-            'uri' => $relativeUri,
+            'uri' => parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH),
         ]);
         break;
 }
