@@ -14,7 +14,7 @@ let users = []; // Simulamos una base de datos con un arreglo
 // Ruta para registrar usuarios
 app.post('/register', async (req, res) => {
 const { username, email, password } = req.body;
-const hashedPassword = await bcrypt.hash(password, 10);
+const hashedPassword = awa it bcrypt.hash(password, 10);
 users.push({ username, email, password: hashedPassword });
 res.json({ message: 'Usuario registrado con éxito' });
 });

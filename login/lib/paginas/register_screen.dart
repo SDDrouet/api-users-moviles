@@ -4,27 +4,17 @@ import 'auth_service.dart'; // Importa el AuthService
 
 class RegisterScreen extends StatelessWidget {
   RegisterScreen({Key? key}) : super(key: key);
-  final _usernameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
 
-  void _showRegistrationSuccess(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Registro exitoso'),
-          content: const Text('Usuario registrado correctamente.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Cierra el diálogo
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  void _showSnackBar(BuildContext context, String message, {bool success = true}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: success ? Colors.green : Colors.red,
+      ),
     );
   }
 
@@ -69,7 +59,7 @@ class RegisterScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                     TextField(
-                      controller: _usernameController, // Asigna controlador
+                      controller: _usernameController,
                       decoration: InputDecoration(
                         hintText: 'Usuario',
                         filled: true,
@@ -82,7 +72,7 @@ class RegisterScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     TextField(
-                      controller: _emailController, // Asigna controlador
+                      controller: _emailController,
                       decoration: InputDecoration(
                         hintText: 'Email',
                         filled: true,
@@ -92,10 +82,11 @@ class RegisterScreen extends StatelessWidget {
                           borderSide: BorderSide.none,
                         ),
                       ),
+                      keyboardType: TextInputType.emailAddress,
                     ),
                     const SizedBox(height: 16),
                     TextField(
-                      controller: _passwordController, // Asigna controlador
+                      controller: _passwordController,
                       obscureText: true,
                       decoration: InputDecoration(
                         hintText: 'Contraseña',
@@ -110,17 +101,24 @@ class RegisterScreen extends StatelessWidget {
                     const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: () async {
+                        final username = _usernameController.text.trim();
+                        final email = _emailController.text.trim();
+                        final password = _passwordController.text.trim();
+
+                        if (username.isEmpty || email.isEmpty || password.isEmpty) {
+                          _showSnackBar(context, 'Todos los campos son obligatorios', success: false);
+                          return;
+                        }
+
                         try {
-                          final message = await AuthService().register(
-                            _usernameController.text,
-                            _emailController.text,
-                            _passwordController.text,
+                          await AuthService().register(username, email, password);
+                          _showSnackBar(context, 'Usuario registrado correctamente');
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => const LoginScreen()),
                           );
-                          _showRegistrationSuccess(context);
                         } catch (error) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error: $error')),
-                          );
+                          _showSnackBar(context, 'Error: $error', success: false);
                         }
                       },
                       child: const Text('REGISTRARSE'),
